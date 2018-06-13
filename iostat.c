@@ -859,33 +859,33 @@ void write_disk_stat_header(int *fctr)
 {
 	if (DISPLAY_EXTENDED(flags)) {
 		/* Extended stats */
-		printf("Device:         rrqm/s   wrqm/s     r/s     w/s");
+		printf("Device,rrqm/s,wrqm/s,r/s,w/s");
 		if (DISPLAY_MEGABYTES(flags)) {
-			printf("    rMB/s    wMB/s");
+			printf(",rMB/s,wMB/s");
 			*fctr = 2048;
 		}
 		else if (DISPLAY_KILOBYTES(flags)) {
-			printf("    rkB/s    wkB/s");
+			printf(",rkB/s,wkB/s");
 			*fctr = 2;
 		}
 		else {
-			printf("   rsec/s   wsec/s");
+			printf(",rsec/s,wsec/s");
 		}
-		printf(" avgrq-sz avgqu-sz   await r_await w_await  svctm  %%util\n");
+		printf(",avgrq-sz,avgqu-sz,await,r_await,w_await,svctm,%%util\n");
 	}
 	else {
 		/* Basic stats */
-		printf("Device:            tps");
+		printf("Device,tps");
 		if (DISPLAY_KILOBYTES(flags)) {
-			printf("    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn\n");
+			printf(",kB_read/s,kB_wrtn/s,kB_read,kB_wrtn\n");
 			*fctr = 2;
 		}
 		else if (DISPLAY_MEGABYTES(flags)) {
-			printf("    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn\n");
+			printf(",MB_read/s,MB_wrtn/s,MB_read,MB_wrtn\n");
 			*fctr = 2048;
 		}
 		else {
-			printf("   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn\n");
+			printf(",Blk_read/s,Blk_wrtn/s,Blk_read,Blk_wrtn\n");
 		}
 	}
 }
@@ -955,33 +955,33 @@ void write_ext_stat(int curr, unsigned long long itv, int fctr,
 	}
 	if (DISPLAY_HUMAN_READ(flags)) {
 		cprintf_in(IS_STR, "%s\n", devname, 0);
-		printf("%13s", "");
+		printf("%s", "");
 	}
 	else {
-		cprintf_in(IS_STR, "%-13s", devname, 0);
+		cprintf_in(IS_STR, "%s", devname, 0);
 	}
 
 	/*       rrq/s wrq/s   r/s   w/s  rsec  wsec  rqsz  qusz await r_await w_await svctm %util */
-	cprintf_f(2, 8, 2,
+	cprintf_f(2, 0, 2,
 		  S_VALUE(ioj->rd_merges, ioi->rd_merges, itv),
 		  S_VALUE(ioj->wr_merges, ioi->wr_merges, itv));
-	cprintf_f(2, 7, 2,
+	cprintf_f(2, 0, 2,
 		  S_VALUE(ioj->rd_ios, ioi->rd_ios, itv),
 		  S_VALUE(ioj->wr_ios, ioi->wr_ios, itv));
-	cprintf_f(4, 8, 2,
+	cprintf_f(4, 0, 2,
 		  S_VALUE(ioj->rd_sectors, ioi->rd_sectors, itv) / fctr,
 		  S_VALUE(ioj->wr_sectors, ioi->wr_sectors, itv) / fctr,
 		  xds.arqsz,
 		  S_VALUE(ioj->rq_ticks, ioi->rq_ticks, itv) / 1000.0);
-	cprintf_f(3, 7, 2, xds.await, r_await, w_await);
+	cprintf_f(3, 0, 2, xds.await, r_await, w_await);
 	/* The ticks output is biased to output 1000 ticks per second */
-	cprintf_f(1, 6, 2, xds.svctm);
+	cprintf_f(1, 0, 2, xds.svctm);
 	/*
 	 * Again: Ticks in milliseconds.
 	 * In the case of a device group (option -g), shi->used is the number of
 	 * devices in the group. Else shi->used equals 1.
 	 */
-	cprintf_pc(1, 6, 2,
+	cprintf_pc(1, 0, 2,
 		   shi->used ? xds.util / 10.0 / (double) shi->used
 		             : xds.util / 10.0);	/* shi->used should never be null here */
 	printf("\n");
@@ -1016,10 +1016,10 @@ void write_basic_stat(int curr, unsigned long long itv, int fctr,
 	}
 	if (DISPLAY_HUMAN_READ(flags)) {
 		cprintf_in(IS_STR, "%s\n", devname, 0);
-		printf("%13s", "");
+		printf("%s", "");
 	}
 	else {
-		cprintf_in(IS_STR, "%-13s", devname, 0);
+		cprintf_in(IS_STR, "%s", devname, 0);
 	}
 
 	/* Print stats coming from /sys or /proc/diskstats */
@@ -1032,12 +1032,12 @@ void write_basic_stat(int curr, unsigned long long itv, int fctr,
 		wr_sec &= 0xffffffff;
 	}
 
-	cprintf_f(1, 8, 2,
+	cprintf_f(1, 0, 2,
 		  S_VALUE(ioj->rd_ios + ioj->wr_ios, ioi->rd_ios + ioi->wr_ios, itv));
-	cprintf_f(2, 12, 2,
+	cprintf_f(2, 0, 2,
 		  S_VALUE(ioj->rd_sectors, ioi->rd_sectors, itv) / fctr,
 		  S_VALUE(ioj->wr_sectors, ioi->wr_sectors, itv) / fctr);
-	cprintf_u64(2, 10,
+	cprintf_u64(2, 0,
 		    (unsigned long long) rd_sec / fctr,
 		    (unsigned long long) wr_sec / fctr);
 	printf("\n");
@@ -1058,6 +1058,7 @@ void write_stats(int curr, struct tm *rectime)
 	unsigned long long itv;
 	struct io_hdr_stats *shi;
 	struct io_dlist *st_dev_list_i;
+    static int initiated;
 
 	/* Test stdout */
 	TEST_STDOUT(STDOUT_FILENO);
@@ -1118,7 +1119,10 @@ void write_stats(int curr, struct tm *rectime)
 		shi = st_hdr_iodev;
 
 		/* Display disk stats header */
-		write_disk_stat_header(&fctr);
+        if(!initiated) {
+            write_disk_stat_header(&fctr);
+            initiated = 1;
+        }
 
 		for (i = 0; i < iodev_nr; i++, shi++) {
 			if (shi->used) {
@@ -1192,7 +1196,7 @@ void write_stats(int curr, struct tm *rectime)
 				}
 			}
 		}
-		printf("\n");
+		//printf("\n");
 	}
 }
 
@@ -1302,7 +1306,7 @@ int main(int argc, char **argv)
 	int opt = 1;
 	int i, report_set = FALSE;
 	long count = 1;
-	struct utsname header;
+	//struct utsname header;
 	struct io_dlist *st_dev_list_i;
 	struct tm rectime;
 	char *t, *persist_devname, *devname;
@@ -1598,12 +1602,13 @@ int main(int argc, char **argv)
 	get_localtime(&rectime, 0);
 
 	/* Get system name, release number and hostname */
+    /*
 	uname(&header);
 	if (print_gal_header(&rectime, header.sysname, header.release,
 			     header.nodename, header.machine, cpu_nr)) {
 		flags |= I_D_ISO;
 	}
-	printf("\n");
+	printf("\n"); */
 
 	/* Set a handler for SIGALRM */
 	memset(&alrm_act, 0, sizeof(alrm_act));

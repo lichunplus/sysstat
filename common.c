@@ -1027,7 +1027,7 @@ void cprintf_u64(int num, int width, ...)
 		else {
 			printf("%s", sc_int_stat);
 		}
-		printf(" %*"PRIu64, width, val);
+		printf(",%*"PRIu64, width, val);
 		printf("%s", sc_normal);
 	}
 
@@ -1054,7 +1054,7 @@ void cprintf_x(int num, int width, ...)
 	for (i = 0; i < num; i++) {
 		val = va_arg(args, unsigned int);
 		printf("%s", sc_int_stat);
-		printf(" %*x", width, val);
+		printf(",%*x", width, val);
 		printf("%s", sc_normal);
 	}
 
@@ -1088,7 +1088,7 @@ void cprintf_f(int num, int wi, int wd, ...)
 		else {
 			printf("%s", sc_int_stat);
 		}
-		printf(" %*.*f", wi, wd, val);
+		printf(",%*.*f", wi, wd, val);
 		printf("%s", sc_normal);
 	}
 

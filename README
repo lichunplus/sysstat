@@ -1,4 +1,5 @@
 1. ./configure
 2. make
 3. ./mpstat -P ALL 1 > cpus.csv
+4. ./iostat -d -x 1 > disks.csv
 
