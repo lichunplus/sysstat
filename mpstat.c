@@ -225,20 +225,21 @@ void write_cpu_stats(int dis, unsigned long long g_itv, int prev, int curr,
 	struct stats_cpu *scc, *scp;
 	unsigned long long pc_itv;
 	int cpu;
+    static int initiated;
 
-	if (dis) {
-		printf("\n%-11s  CPU    %%usr   %%nice    %%sys %%iowait    %%irq   "
-		       "%%soft  %%steal  %%guest  %%gnice   %%idle\n",
-		       prev_string);
+	if (!initiated && dis) {
+		printf("CPU,%%usr,%%nice,%%sys,%%iowait,%%irq"
+		       ",%%soft,%%steal,%%guest,%%gnice,%%idle\n");
+        initiated = 1;
 	}
 
 	/* Check if we want global stats among all proc */
 	if (*cpu_bitmap & 1) {
 
-		printf("%-11s", curr_string);
-		cprintf_in(IS_STR, " %s", " all", 0);
+		//printf("%-11s", curr_string);
+		cprintf_in(IS_STR, "%s", "all", 0);
 
-		cprintf_pc(10, 7, 2,
+		cprintf_pc(10, 0, 2,
 			   (st_cpu[curr]->cpu_user - st_cpu[curr]->cpu_guest) <
 			   (st_cpu[prev]->cpu_user - st_cpu[prev]->cpu_guest) ?
 			   0.0 :
@@ -300,17 +301,17 @@ void write_cpu_stats(int dis, unsigned long long g_itv, int prev, int curr,
 		     scc->cpu_hardirq + scc->cpu_softirq) == 0) {
 
 			if (!DISPLAY_ONLINE_CPU(flags)) {
-				printf("%-11s", curr_string);
-				cprintf_in(IS_INT, " %4d", "", cpu - 1);
-				cprintf_pc(10, 7, 2,
+				//printf("%-11s", curr_string);
+				cprintf_in(IS_INT, "%d", "", cpu - 1);
+				cprintf_pc(10, 0, 2,
 					   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 				printf("\n");
 			}
 			continue;
 		}
 
-		printf("%-11s", curr_string);
-		cprintf_in(IS_INT, " %4d", "", cpu - 1);
+		//printf("%-11s", curr_string);
+		cprintf_in(IS_INT, "%d", "", cpu - 1);
 
 		/* Recalculate itv for current proc */
 		pc_itv = get_per_cpu_interval(scc, scp);
@@ -320,13 +321,13 @@ void write_cpu_stats(int dis, unsigned long long g_itv, int prev, int curr,
 			 * If the CPU is tickless then there is no change in CPU values
 			 * but the sum of values is not zero.
 			 */
-			cprintf_pc(10, 7, 2,
+			cprintf_pc(10, 0, 2,
 				   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100.0);
 			printf("\n");
 		}
 
 		else {
-			cprintf_pc(10, 7, 2,
+			cprintf_pc(10, 0, 2,
 				   (scc->cpu_user - scc->cpu_guest) < (scp->cpu_user - scp->cpu_guest) ?
 				   0.0 :
 				   ll_sp_value(scp->cpu_user - scp->cpu_guest,
@@ -996,7 +997,7 @@ void rw_mpstat_loop(int dis_hdr, int rows)
 	while (count);
 
 	/* Write stats average */
-	write_stats_avg(curr, dis_hdr);
+	//write_stats_avg(curr, dis_hdr);
 }
 
 /*
@@ -1007,7 +1008,7 @@ void rw_mpstat_loop(int dis_hdr, int rows)
 int main(int argc, char **argv)
 {
 	int opt = 0, i, actset = FALSE;
-	struct utsname header;
+	//struct utsname header;
 	int dis_hdr = -1;
 	int rows = 23;
 	char *t;
@@ -1195,12 +1196,14 @@ int main(int argc, char **argv)
 	}
 
 	/* Get time */
-	get_localtime(&(mp_tstamp[0]), 0);
+	//get_localtime(&(mp_tstamp[0]), 0);
 
 	/* Get system name, release number and hostname */
-	uname(&header);
+	//uname(&header);
+    /*
 	print_gal_header(&(mp_tstamp[0]), header.sysname, header.release,
 			 header.nodename, header.machine, get_cpu_nr(~0, FALSE));
+             */
 
 	/* Main loop */
 	rw_mpstat_loop(dis_hdr, rows);

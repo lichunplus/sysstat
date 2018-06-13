@@ -1127,7 +1127,7 @@ void cprintf_pc(int num, int wi, int wd, ...)
 		else {
 			printf("%s", sc_int_stat);
 		}
-		printf(" %*.*f", wi, wd, val);
+		printf(",%*.*f", wi, wd, val);
 		printf("%s", sc_normal);
 	}
 
